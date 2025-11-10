@@ -1,9 +1,5 @@
 # Intelligent Enterprise Assistant
 
-[![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/flask-2.3.3-green.svg)](https://flask.palletsprojects.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-
 Welcome to the **Intelligent Enterprise Assistant** – your friendly AI-powered companion for navigating the complexities of public sector workplaces. Imagine having a knowledgeable colleague who can instantly answer questions about HR policies, IT troubleshooting, upcoming events, or even summarize lengthy documents. That's what we've built here: a robust, scalable chatbot leveraging natural language processing (NLP) to make your workday smoother and more efficient.
 
 Whether you're an employee seeking quick information or an organization looking to streamline internal communications, this assistant is designed to handle it all with security, speed, and a touch of intelligence.
