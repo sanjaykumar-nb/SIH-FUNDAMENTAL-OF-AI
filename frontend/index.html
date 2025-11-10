@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligent Enterprise Assistant</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat { border: 1px solid #ccc; height: 400px; overflow-y: scroll; padding: 10px; }
+        #message { width: 80%; }
+    </style>
+</head>
+<body>
+    <h1>Intelligent Enterprise Assistant</h1>
+    <div id="auth" style="display: block;">
+        <input type="email" id="email" placeholder="Enter email">
+        <button onclick="login()">Login with 2FA</button>
+        <input type="text" id="otp" placeholder="Enter OTP" style="display: none;">
+        <button onclick="verify()" style="display: none;" id="verifyBtn">Verify</button>
+    </div>
+    <div id="chatbot" style="display: none;">
+        <div id="chat"></div>
+        <input type="text" id="message" placeholder="Type your message">
+        <button onclick="sendMessage()">Send</button>
+        <input type="file" id="fileInput">
+        <button onclick="uploadDocument()">Upload Document</button>
+    </div>
+
+    <script>
+        let token = null;
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            try {
+                const response = await fetch('http://localhost:5000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                console.log('Login response status:', response.status);
+                if (response.ok) {
+                    document.getElementById('otp').style.display = 'inline';
+                    document.getElementById('verifyBtn').style.display = 'inline';
+                    alert('OTP sent! Check the console where the Flask app is running for the OTP.');
+                } else {
+                    const error = await response.text();
+                    console.error('Login error:', error);
+                    alert('Login failed: ' + error);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        async function verify() {
+            const email = document.getElementById('email').value;
+            const otp = document.getElementById('otp').value;
+            try {
+                const response = await fetch('http://localhost:5000/auth/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                console.log('Verify response status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.token;
+                    document.getElementById('auth').style.display = 'none';
+                    document.getElementById('chatbot').style.display = 'block';
+                } else {
+                    const error = await response.text();
+                    console.error('Verify error:', error);
+                    alert('Verification failed: ' + error);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        async function sendMessage() {
+            const message = document.getElementById('message').value;
+            try {
+                const response = await fetch('http://localhost:5000/chat/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ message })
+                });
+                console.log('Chat response status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('chat').innerHTML += `<p><strong>You:</strong> ${message}</p><p><strong>Bot:</strong> ${data.response}</p>`;
+                    document.getElementById('message').value = '';
+                } else {
+                    const error = await response.text();
+                    console.error('Chat error:', error);
+                    alert('Chat failed: ' + error);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('Network error: ' + err.message);
+            }
+        }
+
+        async function uploadDocument() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) {
+                alert('Please select a file.');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const response = await fetch('http://localhost:5000/document/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                console.log('Upload response status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('chat').innerHTML += `<p><strong>Summary:</strong> ${data.summary}</p><p><strong>Keywords:</strong> ${data.keywords.join(', ')}</p>`;
+                } else {
+                    const error = await response.text();
+                    console.error('Upload error:', error);
+                    alert('Upload failed: ' + error);
+                }
+            } catch (err) {
+                console.error('Fetch error:', err);
+                alert('Network error: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
